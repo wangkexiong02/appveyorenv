@@ -14,6 +14,9 @@ sed -i -e "s/\$TRYSTACK_PWD2/$TRYSTACK_PWD2/g" clouds.yml
 TIME=`date +%s`
 HOUR=`expr $TIME / 3600 % 24`
 
+source keystone_trystack1 && nova delete beijing hangzhou huhhot
+source keystone_trystack2 && nova delete master1-k8s worker1-k8s worker2-k8s
+
 if [ $HOUR -eq 21 ]; then
   source keystone_trystack1 && nova delete beijing hangzhou huhhot
   source keystone_trystack2 && nova delete master1-k8s worker1-k8s worker2-k8s
