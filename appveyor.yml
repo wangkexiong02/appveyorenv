@@ -29,7 +29,7 @@ build_script:
   - sed -i "s/return netifaces.AF_INET6.*/return False/" C:\cygwin64\lib\python2.7\site-packages\shade\_utils.py
   - bash -c "ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''"
   - bash jobs.sh
-
-#on_finish:
-#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+ 
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
