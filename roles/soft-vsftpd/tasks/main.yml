@@ -1,0 +1,46 @@
+---
+- name: vsftpd | Including OS specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: vsftpd | Installing packages
+  action: "{{ ansible_pkg_mgr }} pkg=vsftpd state=present"
+
+- name: System | Adding nologin shell
+  lineinfile:
+    state: present
+    dest: /etc/shells
+    line: "/usr/sbin/nologin"
+    regexp: "^/usr/sbin/nologin"
+    insertafter: EOF
+
+- name: System | Setting SELinux booleans
+  seboolean:
+    name: "{{ item.key }}"
+    state: "{{ item.value }}"
+  with_dict: "{{ vsftpd_seboolean }}"
+
+- name: vsftpd | Managing users
+  user:
+    name:     "{{ item.username }}"
+    comment:  "{{ item.name  | default(item.username) }}"
+    group:    "{{ item.group | default(vsftpd_group) }}"
+    password: "{{ item.password }}"
+    shell:    /usr/sbin/nologin
+  with_items: "{{ vsftpd_users }}"
+
+- name: vsftpd | Setting up Configuration
+  lineinfile:
+    dest: "{{ vsftpd_config_path }}"
+    regexp: "{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  with_dict:
+    "{{ vsftpd_config }}"
+  notify:
+    - restart vsftpd
+
+- name: vsftpd | Configuring service
+  service:
+    name: vsftpd
+    state: "{{ vsftpd_service_state }}"
+    enabled: "{{ vsftpd_service_enabled }}"
+...

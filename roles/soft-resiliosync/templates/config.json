@@ -1,0 +1,34 @@
+{
+  "device_name": "{{ inventory_hostname }}",
+  "listening_port": {{ rslsync_port }},
+  "storage_path": "/home/{{ rslsync_user }}/.sync",
+  "check_for_updates": false,
+  "use_upnp": {{rslsync_upnp|lower}},
+  "download_limit": 0,
+  "upload_limit": 0,
+  "agree_to_EULA": {% if rslsync_eula_accept -%}"yes"{% else -%}"no"{% endif -%},
+  "webui": {
+     {% if rslsync_webui.get('api_key') -%}
+     "api_key"  : "{{ rslsync_webui.api_key }}",
+     {% endif -%}
+     "listen": "0.0.0.0:8888",
+     "login" : "{{ rslsync_webui.user }}",
+     "password" : "{{ rslsync_webui.password }}"
+  },
+  "shared_folders": [
+    {% if rslsync_shared_folders is defined -%}
+    {% for folder in rslsync_shared_folders %}
+    {
+      "secret" : "{{ folder.key }}",
+      "dir" : "{{ folder.path }}",
+
+      "use_relay_server" : {{folder.use_relay_server|default(rslsync_use_relay_server)|lower}},
+      "use_tracker" : {{folder.use_tracker|default(rslsync_use_tracker)|lower}},
+      "use_dht" : {{folder.use_dht|default(rslsync_use_dht)|lower}},
+      "search_lan" : {{folder.search_lan|default(rslsync_search_lan)|lower}},
+      "use_sync_trash" : {{folder.use_sync_trash|default(rslsync_use_sync_trash)|lower}}
+    }{% if not loop.last -%},{% endif -%}
+    {% endfor %}
+    {% endif -%}
+  ]
+}

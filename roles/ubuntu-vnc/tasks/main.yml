@@ -1,0 +1,27 @@
+---
+- name: Ubuntu | Install sofware for VNC
+  apt:  name={{ item }} state=latest
+  with_items:
+    - gnome-panel
+    - gnome-settings-daemon
+    - gnome-terminal
+    - tightvncserver
+    - feh
+    - autocutsel
+    - firefox
+
+- name: Ubuntu | Create .vnc directory
+  become: no
+  file: path=~/.vnc state=directory mode=0700
+
+- name: Ubuntu | Set VNC password
+  become: no
+  shell: echo '{{ password4vnc }}' | vncpasswd -f > ~/.vnc/passwd && chmod 600 ~/.vnc/passwd
+
+- name: Ubuntu | Set VNC using gnome
+  become: no
+  copy: src=xstartup dest=~/.vnc/xstartup mode="u+x,g+x,o+x"
+  notify:
+    - start vncserver
+...
+

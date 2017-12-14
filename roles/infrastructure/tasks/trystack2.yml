@@ -1,0 +1,104 @@
+---
+# 1. Provision Security Rules
+- name: Create Security Group
+  os_security_group:
+    cloud: trystack2
+    name:  opsecurity
+  tags: security
+
+- name: Add Security Rules
+  os_security_group_rule:
+    cloud: trystack2
+    security_group: opsecurity
+    protocol:         "{{item.protocol}}"
+    port_range_min:   "{{item.port_min}}"
+    port_range_max:   "{{item.port_max}}"
+    remote_ip_prefix: "{{item.remote}}"
+  with_items:
+    - {name: ftp, protocol: tcp, port_min: 20, port_max: 21, remote: 0.0.0.0/0}
+    - {name: ftp-pasv, protocol: tcp, port_min: 30000, port_max: 30100, remote: 0.0.0.0/0}
+    - {name: ssh, protocol: tcp, port_min: 22, port_max: 22, remote: 0.0.0.0/0}
+    - {name: flocker, protocol: tcp, port_min: 4523, port_max: 4523, remote: 0.0.0.0/0}
+    - {name: vnc, protocol: tcp, port_min: 5901, port_max: 5902, remote: 0.0.0.0/0}
+    - {name: vnc, protocol: tcp, port_min: 6001, port_max: 6002, remote: 0.0.0.0/0}
+    - {name: http, protocol: tcp, port_min: 80, port_max: 80, remote: 0.0.0.0/0}
+    - {name: sync, protocol: tcp, port_min: 8888, port_max: 8888, remote: 0.0.0.0/0}
+  tags: security
+
+# 2. Provision Pub KeyPair
+- name: Add Keypairs
+  os_keypair:
+    cloud: trystack2
+    name:  wangkexiong
+    public_key_file: '{{pub_key_file}}'
+  tags: security
+
+# 3. Network Configuration
+- name: Create Network
+  os_network:
+    cloud: trystack2
+    name:  "{{item}}"
+    external: no
+  with_items:
+    - internal
+    - hide
+  tags: network
+
+- name: Create subnet
+  os_subnet:
+    cloud: trystack2
+    name:  "{{item.name}}"
+    network_name: "{{item.network}}"
+    cidr:  "{{item.cidr}}"
+    dns_nameservers:
+        - 4.4.4.4
+        - 8.8.8.8
+  with_items:
+    - {network: internal, name: sub1, cidr: 10.0.33.0/24}
+    - {network: hide, name: sub2, cidr: 10.0.99.0/24}
+  tags: network
+
+- name: Create router
+  os_router:
+    cloud: trystack2
+    name:  router1
+    network: public
+    interfaces:
+        - sub1
+        - sub2
+  tags: network
+
+# 4. Create Instances
+- name: Create k8s-master
+  os_server:
+    name:     master1-k8s
+    cloud:    trystack2
+    key_name: wangkexiong
+    security_groups: opsecurity
+    nics:
+      - net-name: internal
+    image:    CentOS7
+    flavor:   m1.small
+    auto_ip:  yes
+    meta:
+      ansible_host_groups: k8s_master, centos-bastion
+      ansible_host_user:   centos
+  tags: instance
+
+- name: Create k8s-workers
+  os_server:
+    name:     worker{{item}}-k8s
+    cloud:    trystack2
+    key_name: wangkexiong
+    security_groups: opsecurity
+    nics:
+      - net-name: internal
+    image:    CentOS7
+    flavor:   m1.small
+    auto_ip:  no
+    meta:
+      ansible_host_groups: k8s_workers
+      ansible_host_user:   centos
+  with_sequence: count=2
+  tags: instance
+...

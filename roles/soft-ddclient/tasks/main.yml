@@ -1,0 +1,9 @@
+---
+- name: ddclient | Installing packages
+  action: "{{ ansible_pkg_mgr }} pkg=ddclient state=present"
+
+- name: ddclient | Setup configuration
+  template: src=ddclient.conf.j2 dest=/etc/ddclient.conf
+  notify:
+    - restart ddclient
+...

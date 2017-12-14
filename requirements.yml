@@ -1,0 +1,26 @@
+## Grammer for getting roles from Github
+#
+### Install a role from GitHub
+#- name: opendaylight
+#  src: https://github.com/dfarrell07/ansible-opendaylight
+#
+### Install a role from a specific git branch
+#- name: opendaylight
+#  src: https://github.com/dfarrell07/ansible-opendaylight
+#  version: origin/master
+#
+### Install a role at a specific tag from GitHub
+#- name: opendaylight
+#  src: https://github.com/dfarrell07/ansible-opendaylight
+#  version: 1.0.0
+#
+### Install a role at a specific commit from GitHub
+#- name: opendaylight
+#  src: https://github.com/dfarrell07/ansible-opendaylight
+#  version: <commit hash>
+#
+
+## Install a role from Ansible Galaxy
+# Supported platform: Ubuntu
+#   ... Development not finished
+- src: softasap.sa-vnc-remote-desktop

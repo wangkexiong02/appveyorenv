@@ -1,0 +1,6 @@
+---
+- name: start vncserver
+  become: no
+  shell: nohup vncserver :1 -depth '{{ depth4vnc | default("24") }}' -geometry '{{ geometry4vnc | default("1024x768") }}'
+...
+

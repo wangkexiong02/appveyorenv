@@ -1,0 +1,35 @@
+- name: Deploy on OpenStack
+  hosts: localhost
+  tasks:
+  - name: Deploy an instance
+    os_server:
+      state: present
+      cloud: trystack2
+      name:  ubuntu8-1
+      image: Ubuntu16.04 
+      key_name: wangkexiong
+      flavor: m1.small
+      auto_ip: yes
+      nics:
+        - net-name: internal
+    register: instance
+
+  - name: Add Ubuntu Instance to Inventory
+    add_host: name=ubuntu8-1 groups=webservers
+              ansible_ssh_host={{ instance.server.public_v4 }}
+
+- hosts: ubuntu8-1
+  remote_user: ubuntu
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  pre_tasks:
+    - name: Ubuntu16.04 | install python2
+      raw: sudo apt-get -y install python-simplejson
+  tasks:
+    - name: Ubuntu | COPY pub key
+      authorized_key: user=ubuntu key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    - name: Ubuntu | Install apache
+      apt:  name=apache2 state=latest
+...

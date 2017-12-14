@@ -1,0 +1,4 @@
+---
+private_key_file: "{{ role_path }}/files/ansible_id"
+pub_key_file:     "{{ role_path }}/files/ansible_id.pub"
+...

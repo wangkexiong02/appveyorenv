@@ -1,0 +1,14 @@
+---
+- name: Install components for k8s_master
+  hosts: k8s_master
+  remote_user: ubuntu
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  roles:
+    - {
+        role: softasap.sa-vnc-remote-desktop,
+        vnc_password: s3cr3t
+      }
+...

@@ -1,0 +1,8 @@
+---
+- name: Configure /etc/hosts
+  lineinfile:
+    dest:   /etc/hosts
+    line:   "{{ item.value }}  {{ item.key }}"
+    regexp: "^{{ item.value }} | {{ item.key }}$"
+  with_dict: "{{ group_hosts | default({}) }}"
+...

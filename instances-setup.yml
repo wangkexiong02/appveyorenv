@@ -1,0 +1,105 @@
+---
+- name: Add /etc/hosts for trystack2
+  hosts: trystack2
+  remote_user: centos
+  gather_facts: no
+  become: yes
+
+  roles:
+    - role: cloud-inventory
+      group_hosts: "{{ trystack2 }}"
+
+- name: Setup beijing
+  hosts: beijing
+  remote_user: ubuntu
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+
+  roles:
+    - role: cloud-inventory
+      group_hosts: "{{ trystack1 }}"
+    - role: soft-ddclient
+      ddclient_protocol: "dyndns2"
+      ddclient_use:      "web, web=checkip.dynu.com"
+      ddclient_server:   "api.dynu.com"
+      ddclient_login:    "{{ lookup('env', 'DYNU_LOGIN') }}"
+      ddclient_password: "{{ lookup('env', 'DYNU_PWD') }}"
+      ddclient_domain:   "{{ lookup('env', 'BEIJING_DOMAIN') }}"
+    - ubuntu-k8s
+    - ubuntu-bt
+    - role: ubuntu-vnc
+      password4vnc: s3cr3t
+    - role: soft-resiliosync
+      rslsync_user: ubuntu
+      rslsync_webui:
+        user:     "{{ lookup('env', 'SYNC_GUIUSER') }}"
+        password: "{{ lookup('env', 'SYNC_GUIPWD') }}"
+    - {
+        role: soft-vsftpd,
+        vsftpd_config: {
+          listen: "YES",
+          listen_ipv6: "NO",
+          anonymous_enable: "YES",
+          local_enable: "YES",
+          write_enable: "NO",
+          anon_root: /home/ubuntu/Downloads,
+          pasv_enable: "YES",
+          pasv_min_port: 30000,
+          pasv_max_port: 30100,
+          pasv_addr_resolve: "YES",
+          pasv_address: "{{ lookup('env', 'BEIJING_DOMAIN') }}"
+        },
+        vsftpd_users: [
+          {
+            username: vsftp,
+            password: '$1$somesalt$jezmI5TSY7mVTzHLgsK5L.'
+          },
+          {
+            username: wangkexiong,
+            password: '$1$somesalt$jezmI5TSY7mVTzHLgsK5L.'
+          }
+        ]
+      }
+
+- name: Setup master1-k8s
+  hosts: master1-k8s
+  remote_user: centos
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+
+  roles:
+    - soft-ddclient
+    - soft-resiliosync
+    - soft-vsftpd
+  vars:
+    ddclient_protocol: "dyndns2"
+    ddclient_server:   "api.dynu.com"
+    ddclient_login:    "{{ lookup('env', 'DYNU_LOGIN') }}"
+    ddclient_password: "{{ lookup('env', 'DYNU_PWD') }}"
+    ddclient_domain:   "{{ lookup('env', 'K8S_DOMAIN') }}"
+    rslsync_webui:
+      user:     "{{ lookup('env', 'SYNC_GUIUSER') }}"
+      password: "{{ lookup('env', 'SYNC_GUIPWD') }}"
+    vsftpd_users:
+      - username: vsftp
+        name:     FTP User
+        group:    ftp
+        password: '$1$somesalt$jezmI5TSY7mVTzHLgsK5L.'
+      - username: wangkexiong
+        password: '$1$somesalt$jezmI5TSY7mVTzHLgsK5L.'
+    vsftpd_config:
+      listen:            "YES"
+      listen_ipv6:       "NO"
+      anonymous_enable:  "NO"
+      local_enable:      "YES"
+      write_enable:      "YES"
+      pasv_enable:       "YES"
+      pasv_min_port:     30000
+      pasv_max_port:     30100
+      pasv_addr_resolve: "YES"
+      pasv_address:      "{{ lookup('env', 'K8S_DOMAIN') }}"
+      log_ftp_protocol:  "YES"
+      xferlog_enable:    "YES"
+...

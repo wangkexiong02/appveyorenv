@@ -1,0 +1,105 @@
+---
+# 1. Provision Security Rules
+- name: Create Security Group
+  os_security_group:
+    cloud: trystack1
+    name:  opsecurity
+  tags: security
+
+- name: Add Security Rules
+  os_security_group_rule:
+    cloud: trystack1
+    security_group: opsecurity
+    protocol:         "{{item.protocol}}"
+    port_range_min:   "{{item.port_min}}"
+    port_range_max:   "{{item.port_max}}"
+    remote_ip_prefix: "{{item.remote}}"
+  with_items:
+    - {name: ftp, protocol: tcp, port_min: 20, port_max: 21, remote: 0.0.0.0/0}
+    - {name: ftp-pasv, protocol: tcp, port_min: 30000, port_max: 30100, remote: 0.0.0.0/0}
+    - {name: ssh, protocol: tcp, port_min: 22, port_max: 22, remote: 0.0.0.0/0}
+    - {name: vnc, protocol: tcp, port_min: 5901, port_max: 5902, remote: 0.0.0.0/0}
+    - {name: vnc, protocol: tcp, port_min: 6001, port_max: 6002, remote: 0.0.0.0/0}
+    - {name: http, protocol: tcp, port_min: 80, port_max: 80, remote: 0.0.0.0/0}
+    - {name: sync, protocol: tcp, port_min: 8888, port_max: 8888, remote: 0.0.0.0/0}
+  tags: security
+
+# 2. Provision Pub KeyPair
+- name: Add Keypairs
+  os_keypair:
+    cloud: trystack1
+    name:  wangkexiong
+    public_key_file: '{{pub_key_file}}'
+  tags: security
+
+# 3. Network Configuration
+- name: Create Network
+  os_network:
+    cloud: trystack1
+    name:  "{{item}}"
+    external: no
+  with_items:
+    - internal
+    - hide
+  tags: network
+
+- name: Create subnet
+  os_subnet:
+    cloud: trystack1
+    name:  "{{item.name}}"
+    network_name: "{{item.network}}"
+    cidr:  "{{item.cidr}}"
+    dns_nameservers:
+        - 4.4.4.4
+        - 8.8.8.8
+  with_items:
+    - {network: internal, name: sub1, cidr: 172.20.66.0/24}
+    - {network: hide, name: sub2, cidr: 172.20.88.0/24}
+  tags: network
+
+- name: Create router
+  os_router:
+    cloud: trystack1
+    name:  router1
+    network: public
+    interfaces:
+        - sub1
+        - sub2
+  tags: network
+
+# 4. Create Instances
+- name: Create beijing bastion
+  os_server:
+    name:     beijing
+    cloud:    trystack1
+    key_name: wangkexiong
+    security_groups: opsecurity
+    nics:
+      - net-name: internal
+    image:    Ubuntu16.04
+    flavor:   m1.small
+    auto_ip:  yes
+    meta:
+      ansible_host_groups: china, ubuntu-bastion
+      ansible_host_user:   ubuntu
+  tags: instance
+
+- name: Create world behind Great Wall
+  os_server:
+    name:     "{{item}}"
+    cloud:    trystack1
+    key_name: wangkexiong
+    security_groups: opsecurity
+    nics:
+      - net-name: internal
+    image:    Ubuntu16.04
+    flavor:   m1.small
+    auto_ip:  no
+    meta:
+      ansible_host_groups: china
+      ansible_host_user:   ubuntu
+  with_items:
+      - hangzhou
+      - huhhot
+  tags: instance
+...

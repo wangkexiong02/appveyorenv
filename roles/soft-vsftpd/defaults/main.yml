@@ -1,0 +1,25 @@
+---
+#
+# vsftpd_users:
+#   - username: ftpuser
+#     name: FTP User
+#     # openssl passwd -salt 'somesalt' -1 'secret'
+#     password: '$1$somesalt$jezmI5TSY7mVTzHLgsK5L.'
+# vsftpd_config:
+#   local_umask: 022
+# vsftpd_seboolean:
+#    ftp_home_dir: yes
+#    ftpd_full_access: no
+#
+
+vsftpd_package: vsftpd
+
+vsftpd_users: []
+vsftpd_group: ftp
+
+vsftpd_config: {}
+vsftpd_seboolean: {}
+
+vsftpd_service_enabled: yes
+vsftpd_service_state: started
+...

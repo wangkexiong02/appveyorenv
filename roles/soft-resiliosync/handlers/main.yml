@@ -1,0 +1,7 @@
+---
+- name: start rslsync
+  service: name=rslsync state=started
+
+- name: restart rslsync
+  service: name=rslsync state=restarted
+...

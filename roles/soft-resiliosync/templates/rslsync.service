@@ -1,0 +1,13 @@
+[Unit]
+Description=rslsync
+After=network.target
+
+[Service]
+User={{ rslsync_user }}
+Group={{ rslsync_user }}
+ExecStart=/home/{{ rslsync_user }}/.sync/rslsync --config /home/{{ rslsync_user }}/.sync/config.json
+Type=forking
+PIDFile=/home/{{ rslsync_user }}/.sync/sync.pid
+
+[Install]
+WantedBy=default.target

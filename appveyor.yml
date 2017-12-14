@@ -1,0 +1,35 @@
+image: Visual Studio 2015
+
+skip_tags: true
+branches:
+  only:
+    - master
+
+environment:
+  APPVEYOR_RDP_PASSWORD:
+    secure: Hj73NIE1ZHUH7DGShakR4Q==
+  TRYSTACK_USER1:
+    secure: z22OVJ3Gq9n9KEp6B/YxHrOveaW1t1M62Mxc6rjAu+Q=
+  TRYSTACK_PWD1:
+    secure: nWWnfvhWgJqt87RyWuEh6+yiM2ae4XO8Gj0pVNyODag=
+  TRYSTACK_USER2:
+    secure: PQBoJWK+vaxg2Yewc1FGIOB3CU613Vl3fpFKyLu5NBY=
+  TRYSTACK_PWD2:
+    secure: o3LyZbIg/AIVCE7UUQxwcPTFugoYU0LhNRfbnIRb9lY=
+
+install:
+  - nuget install secure-file -ExcludeVersion
+  - secure-file\tools\secure-file -decrypt roles\infrastructure\files\ansible_id.enc -secret %APPVEYOR_RDP_PASSWORD%
+  - secure-file\tools\secure-file -decrypt roles\infrastructure\files\ansible_id.pub.enc -secret %APPVEYOR_RDP_PASSWORD%
+
+build_script:
+  - SET PATH=C:\cygwin64\bin
+  - C:\cygwin64\setup-x86_64.exe -q --packages=python2-devel,python2-pip
+  - bash -c "pip2 install python-novaclient==5.0.0 ansible==2.1.0.0 shade==1.9.0"
+  - sed -i "s/return netifaces.AF_INET6.*/return False/" C:\cygwin64\lib\python2.7\site-packages\shade\_utils.py
+  - bash -c "ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''"
+  - bash jobs.sh
+
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+

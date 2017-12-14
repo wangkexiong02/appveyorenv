@@ -1,0 +1,65 @@
+---
+- name: Prepare Roles from Galaxy
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+   - command: ansible-galaxy install -r requirements.yml --ignore-errors
+
+- name: Bastion Settings for Ubuntu
+  hosts: ubuntu-bastion
+  remote_user: ubuntu
+  gather_facts: no
+
+  pre_tasks:
+    - name: Ubuntu | Install Python2
+      raw: sudo apt install -y python-simplejson
+
+  tasks:
+    - name: Bastion | Add Localhost Access
+      authorized_key: user=ubuntu key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Bastion | Add Keys for Behind Private Clients Accessing
+      copy:
+        src:   ./roles/infrastructure/files/ansible_id
+        dest:  /home/ubuntu/.ssh/id_rsa
+        owner: ubuntu
+        group: ubuntu
+        mode:  0400
+
+- name: Bastion Settings for CentOS
+  hosts: centos-bastion
+  remote_user: centos
+  gather_facts: no
+
+  tasks:
+    - name: Bastion | Add Localhost Access
+      authorized_key: user=centos key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Bastion | Add Keys for Behind Private Clients Accessing
+      copy:
+        src:   ./roles/infrastructure/files/ansible_id
+        dest:  /home/centos/.ssh/id_rsa
+        owner: centos
+        group: centos
+        mode:  0400
+
+- name: Ubuntu | Enable Python2
+  hosts: image-Ubuntu16.04
+  remote_user: ubuntu
+  gather_facts: no
+
+  tasks:
+    - raw: sudo apt install -y python-simplejson
+
+- name: CentOS | Enable EPEL repo
+  hosts: image-CentOS7
+  remote_user: centos
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - yum: name=epel-release state=latest
+...

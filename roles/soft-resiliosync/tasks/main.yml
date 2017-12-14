@@ -1,0 +1,39 @@
+---
+- name: resiliosync | Create user
+  user:
+    name: "{{ rslsync_user }}"
+
+- name: resiliosync | Create .sync directory
+  file:
+    path=/home/{{ rslsync_user }}/.sync
+    owner={{ rslsync_user }}
+    group={{ rslsync_user }}
+    mode=0700
+    state=directory
+
+- name: resiliosync | Download Binary
+  get_url:
+    url="{{ rslsync_url[ansible_architecture] }}"
+    dest="/tmp/rslsync.tar.gz"
+  register: download
+
+- name: resiliosync | Extract Binary
+  command: tar xvzf /tmp/rslsync.tar.gz -C /home/{{ rslsync_user }}/.sync/
+  when: download | changed
+
+- name: copy config
+  template: src=config.json dest=/home/{{ rslsync_user }}/.sync/ owner={{ rslsync_user }} group={{ rslsync_user }} mode=700
+  notify: restart rslsync
+
+- name: install service
+  template: src=rslsync.service dest=/etc/systemd/system/rslsync.service mode=755
+
+- name: activate service
+  service: name=rslsync enabled=yes
+
+- name: create folders
+  file: path={{ item.path }} recurse=yes state=directory owner={{ rslsync_user }} group={{ rslsync_user }} mode=700
+  with_items: "{{ rslsync_shared_folders }}"
+  when: rslsync_shared_folders is defined
+...
+

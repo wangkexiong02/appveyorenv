@@ -1,0 +1,17 @@
+---
+- name: Ubuntu | Install rtorrent
+  apt:  name=rtorrent state=latest
+
+- name: Ubuntu | Configure rtorrent
+  template: src=.rtorrent.rc.j2 dest=~/.rtorrent.rc
+  become: no
+
+- name: Ubuntu | Make Download directories
+  file: path=~/Downloads/{{item}} state=directory
+  become: no
+  with_items:
+    - rSession
+    - rTempDownloadFiles
+    - rWatch
+    - rFullDownloadFiles
+...

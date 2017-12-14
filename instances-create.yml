@@ -1,0 +1,9 @@
+---
+- name: Deploy VMs on Trystack
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  roles:
+    - infrastructure
+...
