@@ -7,15 +7,15 @@ branches:
 
 environment:
   APPVEYOR_RDP_PASSWORD:
-    secure: Hj73NIE1ZHUH7DGShakR4Q==
+    secure: iGUJ3bB1+4QiAFE49Z8mNg==
   TRYSTACK_USER1:
-    secure: z22OVJ3Gq9n9KEp6B/YxHrOveaW1t1M62Mxc6rjAu+Q=
+    secure: OhISSKZ+IVh/KD9xATCLvRzLT7B0jmen8DyKUZd6kB4=
   TRYSTACK_PWD1:
-    secure: nWWnfvhWgJqt87RyWuEh6+yiM2ae4XO8Gj0pVNyODag=
+    secure: SCrPe6XivWUNrAm4Bd/iuPhr1Jt5opGTvrXVqwzzy0o=
   TRYSTACK_USER2:
-    secure: PQBoJWK+vaxg2Yewc1FGIOB3CU613Vl3fpFKyLu5NBY=
+    secure: jYlrXrfE6ykkIVOCoy3xtVoochPR/2jdWlr4Nw5OmI8=
   TRYSTACK_PWD2:
-    secure: o3LyZbIg/AIVCE7UUQxwcPTFugoYU0LhNRfbnIRb9lY=
+    secure: LugabkY985CmMFCO/0fZ7rvV0WpF7lNl2Uln8CRu38s=
 
 install:
   - nuget install secure-file -ExcludeVersion
